@@ -8,7 +8,7 @@ import org.gradle.kotlin.dsl.create
 class JavaPlugin : Plugin<Project> {
     override fun apply(target: Project): Unit = with(target) {
         apply(plugin = "base")
-        tasks.create<CompileTask>("compile") {
+        tasks.register("compile", CompileTask::class.java) {
             sourceDir.set(layout.projectDirectory.dir("src/main/java"))
             classDir.set(layout.buildDirectory.dir("$name/classes"))
         }
