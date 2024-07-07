@@ -16,10 +16,14 @@ class JavaPlugin : Plugin<Project> {
             classDir.set(layout.buildDirectory.dir("$name/classes"))
         }
 
-        tasks.register<Jar>("jar") {
+        val jarTask = tasks.register<Jar>("jar") {
             from(compileTask/*.flatMap { it.classDir }*/)
             destinationDirectory.set(layout.buildDirectory.dir("libs"))
 //            into(layout.buildDirectory.dir("libs"))
+        }
+
+        tasks.named("assemble") {
+            dependsOn(jarTask)
         }
     }
 }
