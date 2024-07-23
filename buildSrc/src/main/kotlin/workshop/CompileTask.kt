@@ -2,7 +2,9 @@ package workshop
 
 import org.gradle.api.DefaultTask
 import org.gradle.api.JavaVersion
+import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.DirectoryProperty
+import org.gradle.api.internal.file.FileOperations
 import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.*
@@ -14,6 +16,10 @@ abstract class CompileTask : DefaultTask() {
     @get:InputDirectory
     @get:PathSensitive(PathSensitivity.RELATIVE)
     abstract val sourceDir: DirectoryProperty
+
+    @get:InputFiles
+    @get:PathSensitive(PathSensitivity.RELATIVE)
+    abstract val classpath: ConfigurableFileCollection
 
     @get:Input
     @get:Optional
@@ -28,6 +34,8 @@ abstract class CompileTask : DefaultTask() {
 
     @get:Inject
     abstract val execOperations: ExecOperations
+    @get:Inject
+    abstract val fileOperations: FileOperations
 
     init {
         println("create compile")
@@ -35,12 +43,16 @@ abstract class CompileTask : DefaultTask() {
 
     @TaskAction
     fun compile() {
+        fileOperations.delete(classDir  )
         execOperations.exec {
             executable("javac")
             javaVersion.orNull?.let {
                 args("--release", it.toString())
             }
             args("--source-path", sourceDir.get().asFile.path)
+            if (!classpath.isEmpty) {
+                args("--class-path", classpath.asPath)
+            }
             args("-d", classDir.get().asFile.path)
             args(additionalArgs.get())
             args(sourceDir.get().asFileTree)
