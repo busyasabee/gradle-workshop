@@ -2,7 +2,7 @@ package workshop;
 
 public class Consumer {
     public static void main(String[] args) {
-//        ProducerPrinter.printMessage();
+        ProducerPrinter.printMessage();
         ConsumerPrinter.printMessage();
     }
 }

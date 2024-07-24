@@ -7,6 +7,7 @@ java {
 }
 
 dependencies {
+    implementation(project(":producer"))
     implementation("org.apache.commons:commons-text:1.11.0")
 }
 
