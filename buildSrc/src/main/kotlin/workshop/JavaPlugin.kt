@@ -6,19 +6,32 @@ import org.gradle.api.attributes.Bundling
 import org.gradle.api.attributes.Category
 import org.gradle.api.attributes.LibraryElements
 import org.gradle.api.attributes.Usage
+import org.gradle.api.attributes.java.TargetJvmEnvironment
 import org.gradle.api.attributes.java.TargetJvmVersion
 import org.gradle.api.component.SoftwareComponentFactory
 import org.gradle.api.tasks.JavaExec
 import org.gradle.jvm.tasks.Jar
-import org.gradle.kotlin.dsl.apply
-import org.gradle.kotlin.dsl.create
-import org.gradle.kotlin.dsl.named
-import org.gradle.kotlin.dsl.register
+import org.gradle.kotlin.dsl.*
 import javax.inject.Inject
+import workshop.attributes.*
 
 class JavaPlugin @Inject constructor(private val softwareComponentFactory: SoftwareComponentFactory): Plugin<Project> {
     override fun apply(target: Project): Unit = with(target) {
         apply(plugin = "base")
+
+        dependencies {
+            attributesSchema {
+                attribute(TargetJvmVersion.TARGET_JVM_VERSION_ATTRIBUTE) {
+                    compatibilityRules.add(JavaVersionCompatibilityRule::class)
+                }
+                attribute(LibraryElements.LIBRARY_ELEMENTS_ATTRIBUTE) {
+                    compatibilityRules.add(LibraryElementsCompatibilityRules::class)
+                }
+                attribute(TargetJvmEnvironment.TARGET_JVM_ENVIRONMENT_ATTRIBUTE) {
+                    disambiguationRules.add(TargetJvmEnvironmentDisambiguationRule::class)
+                }
+            }
+        }
         val ext = extensions.create<JavaPluginsExtension>("java")
         val implementation = configurations.dependencyScope("implementation")
         val runtimeClasspath = configurations.resolvable("runtimeClasspath") {
