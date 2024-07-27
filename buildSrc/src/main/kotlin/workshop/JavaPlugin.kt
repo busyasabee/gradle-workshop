@@ -33,7 +33,10 @@ class JavaPlugin @Inject constructor(private val softwareComponentFactory: Softw
             }
         }
         val ext = extensions.create<JavaPluginsExtension>("java")
-        val implementation = configurations.dependencyScope("implementation")
+        val api = configurations.dependencyScope("api")
+        val implementation = configurations.dependencyScope("implementation") {
+            extendsFrom(api.get())
+        }
         val runtimeClasspath = configurations.resolvable("runtimeClasspath") {
             extendsFrom(implementation.get())
             attributes {
@@ -47,10 +50,23 @@ class JavaPlugin @Inject constructor(private val softwareComponentFactory: Softw
                 )
             }
         }
+        val compileClasspath = configurations.resolvable("compileClasspath") {
+            extendsFrom(implementation.get())
+            attributes {
+                attribute(Category.CATEGORY_ATTRIBUTE, objects.named(Category.LIBRARY))
+                attribute(Usage.USAGE_ATTRIBUTE, objects.named(Usage.JAVA_API))
+                attribute(Bundling.BUNDLING_ATTRIBUTE, objects.named(Bundling.EXTERNAL))
+                attribute(LibraryElements.LIBRARY_ELEMENTS_ATTRIBUTE, objects.named(LibraryElements.JAR))
+                attributeProvider(
+                    TargetJvmVersion.TARGET_JVM_VERSION_ATTRIBUTE,
+                    ext.version.map { it.majorVersion.toInt()}
+                )
+            }
+        }
         val compileTask = tasks.register("compile", CompileTask::class.java) {
             sourceDir.set(layout.projectDirectory.dir("src/main/java"))
             classDir.set(layout.buildDirectory.dir("$name/classes"))
-            classpath.from(runtimeClasspath)
+            classpath.from(compileClasspath)
         }
 
         val jarTask = tasks.register<Jar>("jar") {
@@ -72,6 +88,21 @@ class JavaPlugin @Inject constructor(private val softwareComponentFactory: Softw
             attributes {
                 attribute(Category.CATEGORY_ATTRIBUTE, objects.named(Category.LIBRARY))
                 attribute(Usage.USAGE_ATTRIBUTE, objects.named(Usage.JAVA_RUNTIME))
+                attribute(Bundling.BUNDLING_ATTRIBUTE, objects.named(Bundling.EXTERNAL))
+                attribute(LibraryElements.LIBRARY_ELEMENTS_ATTRIBUTE, objects.named(LibraryElements.JAR))
+                attributeProvider(
+                    TargetJvmVersion.TARGET_JVM_VERSION_ATTRIBUTE,
+                    ext.version.map { it.majorVersion.toInt()}
+                )
+            }
+            outgoing.artifact(jarTask)
+        }
+
+        configurations.consumable("apiElements") {
+            extendsFrom(api.get())
+            attributes {
+                attribute(Category.CATEGORY_ATTRIBUTE, objects.named(Category.LIBRARY))
+                attribute(Usage.USAGE_ATTRIBUTE, objects.named(Usage.JAVA_API ))
                 attribute(Bundling.BUNDLING_ATTRIBUTE, objects.named(Bundling.EXTERNAL))
                 attribute(LibraryElements.LIBRARY_ELEMENTS_ATTRIBUTE, objects.named(LibraryElements.JAR))
                 attributeProvider(
