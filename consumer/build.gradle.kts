@@ -1,10 +1,10 @@
 plugins {
-    workshop.java
+    `java-convention`
 }
 
-java {
-    version = JavaVersion.VERSION_17
-}
+//java {
+//    version = JavaVersion.VERSION_17
+//}
 
 dependencies {
     implementation(project(":producer"))
@@ -12,9 +12,9 @@ dependencies {
 //    implementation("com.google.guava:guava:33.1.0-jre")
 }
 
-tasks.compile {
-    additionalArgs.add("-parameters")
-}
+//tasks.compile {
+//    additionalArgs.add("-parameters")
+//}
 
 tasks.runMain {
     mainClass = "workshop.Consumer"
