@@ -4,6 +4,8 @@ plugins {
 
 dependencies {
     api("org.springframework.boot:spring-boot-gradle-plugin:3.2.4")
+    implementation("org.postgresql:postgresql:42.7.4")
+
 }
 
 gradlePlugin {
@@ -19,6 +21,10 @@ gradlePlugin {
         create("spring-boot") {
             id = "workshop.spring-boot"
             implementationClass = "workshop.SpringBootExtendedPlugin"
+        }
+        create("dbplugin") {
+            id = "workshop.dbplugin"
+            implementationClass = "workshop.DbPlugin"
         }
     }
 }
